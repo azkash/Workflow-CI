@@ -14,7 +14,7 @@ DATA_PATH = BASE_DIR / "dataset_preprocessing.csv"
 OUTPUT_DIR = BASE_DIR / "outputs"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-mlflow.set_experiment("Loan_Prediction_CI")
+#mlflow.set_experiment("Loan_Prediction_CI")
 
 df = pd.read_csv(DATA_PATH)
 X = df.drop(columns=["Loan_Status"])
