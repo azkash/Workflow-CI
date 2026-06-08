@@ -24,8 +24,8 @@ jobs:
           pip install mlflow==2.19.0 pandas==2.2.3 scikit-learn==1.5.2
 
       - name: Run MLflow Project
-        working-directory: ./MLProject
-        run: python modelling.py
+        run: mlflow run ./MLProject --env-manager=local --experiment-name Loan_Prediction_CI
+
       - name: Upload training artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -33,4 +33,3 @@ jobs:
           path: |
             MLProject/mlruns
             MLProject/outputs
-            
