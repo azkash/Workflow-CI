@@ -14,7 +14,6 @@ DATA_PATH = BASE_DIR / "dataset_preprocessing.csv"
 OUTPUT_DIR = BASE_DIR / "outputs"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-mlflow.set_tracking_uri(f"file:{(BASE_DIR / 'mlruns').as_posix()}")
 mlflow.set_experiment("Loan_Prediction_CI")
 
 df = pd.read_csv(DATA_PATH)
@@ -33,32 +32,30 @@ model = RandomForestClassifier(
     class_weight="balanced",
 )
 
-with mlflow.start_run(run_name="ci_random_forest", nested=True) as run:
-    model.fit(X_train, y_train)
-    pred = model.predict(X_test)
+model.fit(X_train, y_train)
+pred = model.predict(X_test)
 
-    metrics = {
-        "accuracy": accuracy_score(y_test, pred),
-        "precision": precision_score(y_test, pred, zero_division=0),
-        "recall": recall_score(y_test, pred, zero_division=0),
-        "f1_score": f1_score(y_test, pred, zero_division=0),
-    }
-    mlflow.log_params(model.get_params())
-    mlflow.log_metrics(metrics)
+metrics = {
+    "accuracy": float(accuracy_score(y_test, pred)),
+    "precision": float(precision_score(y_test, pred, zero_division=0)),
+    "recall": float(recall_score(y_test, pred, zero_division=0)),
+    "f1_score": float(f1_score(y_test, pred, zero_division=0)),
+}
 
-    signature = infer_signature(X_train, model.predict(X_train))
-    mlflow.sklearn.log_model(
-        model,
-        artifact_path="model",
-        signature=signature,
-        input_example=X_train.head(3),
-    )
+mlflow.log_params(model.get_params())
+mlflow.log_metrics(metrics)
 
-    (OUTPUT_DIR / "metrics.json").write_text(
-        json.dumps(metrics, indent=2), encoding="utf-8"
-    )
-    (OUTPUT_DIR / "run_id.txt").write_text(run.info.run_id, encoding="utf-8")
+signature = infer_signature(X_train, model.predict(X_train))
+mlflow.sklearn.log_model(
+    model,
+    artifact_path="model",
+    signature=signature,
+    input_example=X_train.head(3),
+)
 
-    print("Training completed")
-    print("Run ID:", run.info.run_id)
-    print(metrics)
+(OUTPUT_DIR / "metrics.json").write_text(
+    json.dumps(metrics, indent=2), encoding="utf-8"
+)
+
+print("Training completed")
+print(metrics)
